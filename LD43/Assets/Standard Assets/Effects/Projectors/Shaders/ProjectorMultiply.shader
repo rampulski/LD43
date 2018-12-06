@@ -5,13 +5,14 @@ Shader "Projector/Multiply" {
 	Properties {
 		_ShadowTex ("Cookie", 2D) = "gray" {}
 		_FalloffTex ("FallOff", 2D) = "white" {}
+		_Cutoff ("Cutoff", Range (0, 1)) = 0.25
 	}
 	Subshader {
 		Tags {"Queue"="Transparent"}
 		Pass {
 			ZWrite Off
 			ColorMask RGB
-			Blend DstColor Zero
+			Blend DstColor OneMinusDstColor
 			Offset -1, -1
 
 			CGPROGRAM
@@ -42,6 +43,7 @@ Shader "Projector/Multiply" {
 			
 			sampler2D _ShadowTex;
 			sampler2D _FalloffTex;
+			float _Cutoff;
 			
 			fixed4 frag (v2f i) : SV_Target
 			{
@@ -50,8 +52,20 @@ Shader "Projector/Multiply" {
 
 				fixed4 texF = tex2Dproj (_FalloffTex, UNITY_PROJ_COORD(i.uvFalloff));
 				fixed4 res = lerp(fixed4(1,1,1,0), texS, texF.a);
+				//fixed4 res = texS;
 
-				UNITY_APPLY_FOG_COLOR(i.fogCoord, res, fixed4(1,1,1,1));
+				/*if (res.r < _Cutoff && res.g < _Cutoff && res.b < _Cutoff)
+				{
+					res = fixed4(0,0,0,1);
+				}*/
+
+				if (i.uvShadow.x > 50 || i.uvShadow.x < -1
+				|| i .uvShadow.y < 0 || i.uvShadow.y >24)
+				{
+					res = fixed4(0,0,0,0);
+				}
+
+				//UNITY_APPLY_FOG_COLOR(i.fogCoord, res, fixed4(1,1,1,1));
 				return res;
 			}
 			ENDCG

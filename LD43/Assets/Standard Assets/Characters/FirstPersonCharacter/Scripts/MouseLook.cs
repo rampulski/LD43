@@ -111,5 +111,10 @@ namespace UnityStandardAssets.Characters.FirstPerson
             return q;
         }
 
+        public void ResetRotation(Quaternion characterRotation, Quaternion cameraRotation)
+        {
+            m_CharacterTargetRot = characterRotation;
+            m_CameraTargetRot = cameraRotation;
+        }
     }
 }
